@@ -45,6 +45,7 @@ Available settings are:
 | puppetfile_path | Directroy where the Puppetfile is (Default: basedir)                                          |
 | puppetfile_name | The Puppetfile name (Default: basedir/Puppetfile)                                             |
 | force           | Overwrite locally changed files on install (Default: false)                                   |
+| forge_override  | Override the forge location for gems (Default: nil)                                           |
 | purge           | Purge unmanaged modules from the modulesdir (Default: false)                                  |
 
 ## Rake tasks
@@ -74,7 +75,7 @@ the modules't source repository and version tag.
 
 This feature is useful when you want to bring all the forge modules into git source control.  This assumes every module
 tags the release or provides a valid repo url.  We recommend to manually review
-the output provided by this task before replacing the forge based content in your puppetfile as not every module author 
+the output provided by this task before replacing the forge based content in your puppetfile as not every module author
 tagged a release or provided a working url.
 
 ### r10k:solve_dependencies
@@ -101,18 +102,18 @@ Reads the Puppetfile in the current directory and installs them under the `path`
   `v0.0.0` convention, other wise it will be ignored.
   * The version has to be specified explicitly. If it is omitted, or it is
   `:latest`, the module will be ignored.
-  
+
 ### r10k:validate[path]
-The validate rake task will determine if the url is a valid url by connecting 
+The validate rake task will determine if the url is a valid url by connecting
 to the repository and verififying it actually exists and can be accessed.
 Additional if a branch, tag, or ref is specified in the Puppetfile the validate
 task will also verify that that branch/tag/ref exists in the remote repository.
 
 If you have ever deployed r10k to production only to find out a tag or branch is
-missing this validate task will catch that issue.  
+missing this validate task will catch that issue.
 
 A exit status of 0 is returned if there are no faults, while a 1 is returned if
-any module has a bad status. 
+any module has a bad status.
 
 Status emojis can be customized by setting the following environment variables.
 
@@ -168,13 +169,13 @@ for modules that are marked as deprecated on the Forge.
 Example
 
 ```
-NAME                    | DEPRECATED_AT            
+NAME                    | DEPRECATED_AT
 ------------------------|--------------------------
-kemra102-auditd         | 2021-07-22 12:11:46      
-puppet-staging          | 2018-12-18 11:11:29      
-puppetlabs-resource_api | 2021-03-31 12:53:24      
-puppetlabs-ruby         | 2021-04-22 10:29:42      
-puppetlabs-translate    | 2021-03-19 10:11:51      
+kemra102-auditd         | 2021-07-22 12:11:46
+puppet-staging          | 2018-12-18 11:11:29
+puppetlabs-resource_api | 2021-03-31 12:53:24
+puppetlabs-ruby         | 2021-04-22 10:29:42
+puppetlabs-translate    | 2021-03-19 10:11:51
 
 Error: Puppetfile contains deprecated modules.
 ```
