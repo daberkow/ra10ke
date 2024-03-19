@@ -34,7 +34,7 @@ module Ra10ke::Dependencies
     def initialize(pfile)
       @puppetfile = pfile
        # semver is the default version format.
-  
+
       puppetfile.load!
     end
 
@@ -52,15 +52,15 @@ module Ra10ke::Dependencies
         File.readlines('.r10kignore').each {|l| l.chomp!} if File.exist?('.r10kignore')
       end || []
     end
-  
-    # @summary creates an array of module hashes with version info 
-    # @param {Object} supplied_puppetfile - the parsed puppetfile object 
+
+    # @summary creates an array of module hashes with version info
+    # @param {Object} supplied_puppetfile - the parsed puppetfile object
     # @returns {Array} array of version info for each module
     # @note does not include ignored modules or modules up2date
     def processed_modules(supplied_puppetfile = puppetfile)
       threads = []
       threads = supplied_puppetfile.modules.map do |puppet_module|
-      Thread.new do 
+      Thread.new do
         begin
           next if ignored_modules.include? puppet_module.title
           if puppet_module.class == ::R10K::Module::Forge
@@ -74,7 +74,7 @@ module Ra10ke::Dependencies
               type: 'forge',
               message: installed_version != forge_version ? :outdated : :current
             }
-          
+
           elsif puppet_module.class == R10K::Module::Git
             # use helper; avoid `desired_ref`
             # we do not want to deal with `:control_branch`
@@ -148,7 +148,7 @@ module Ra10ke::Dependencies
       PuppetForge.user_agent = "ra10ke/#{Ra10ke::VERSION}"
       puppetfile = get_puppetfile
       puppetfile.load!
-      PuppetForge.host = puppetfile.forge if puppetfile.forge =~ /^http/
+      PuppetForge.host = forge_override.dup if forge_override =~ /^http/
 
       # ignore file allows for "don't tell me about this"
       ignore_modules = []
@@ -156,17 +156,17 @@ module Ra10ke::Dependencies
         ignore_modules = File.readlines('.r10kignore').each {|l| l.chomp!}
       end
       forge_mods = puppetfile.modules.find_all { |mod| mod.instance_of?(R10K::Module::Forge) && mod.v3_module.homepage_url? }
-     
+
       threads = forge_mods.map do |mod|
-       Thread.new do 
-          source_url = mod.v3_module.attributes.dig(:current_release, :metadata, :source) || mod.v3_module.homepage_url 
+       Thread.new do
+          source_url = mod.v3_module.attributes.dig(:current_release, :metadata, :source) || mod.v3_module.homepage_url
           # git:// does not work with ls-remote command, convert to https
           source_url = source_url.gsub('git://', 'https://')
           source_url = source_url.gsub(/\Agit\@(.*)\:(.*)/) do
             "https://#{$1}/#{$2}"
           end
           repo = ::Ra10ke::GitRepo.new(source_url)
-          ref = repo.get_ref_like(mod.expected_version) 
+          ref = repo.get_ref_like(mod.expected_version)
           ref_name = ref ? ref[:name] : "bad url or tag #{mod.expected_version} is missing"
           <<~EOF
           mod '#{mod.name}',
@@ -186,7 +186,7 @@ module Ra10ke::Dependencies
     task :dependencies do
       PuppetForge.user_agent = "ra10ke/#{Ra10ke::VERSION}"
       puppetfile = get_puppetfile
-      PuppetForge.host = puppetfile.forge if puppetfile.forge =~ /^http/
+      PuppetForge.host = forge_override.dup if forge_override =~ /^http/
       dependencies = Ra10ke::Dependencies::Verification.new(puppetfile)
       dependencies.print_table(dependencies.outdated)
     end
